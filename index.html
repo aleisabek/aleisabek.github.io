@@ -242,7 +242,7 @@
         </a>
         <a class="row" href="#case-004">
           <span class="id">CASE-004</span>
-          <span class="t">Linux &amp; Bandit flashcards<span class="d">A study reference for OverTheWire Bandit, live on GitHub Pages, being built topic by topic</span></span>
+          <span class="t">Linux &amp; Bandit flashcards<span class="d">190 Linux command cards for OverTheWire Bandit, generated from SkillQuest and live on GitHub Pages</span></span>
           <span class="st open">IN PROGRESS</span>
         </a>
         <a class="row" href="#case-005">
@@ -411,7 +411,7 @@
         </div>
         <dl class="case-meta">
           <div class="field"><dt>Bandit</dt><dd>Level 13 done · on 14</dd></div>
-          <div class="field"><dt>Stack</dt><dd>HTML · CSS · GitHub Pages</dd></div>
+          <div class="field"><dt>Stack</dt><dd>Node.js export script · HTML · CSS · JavaScript · GitHub Pages</dd></div>
           <div class="field"><dt>Live</dt><dd><a href="https://aleisabek.github.io/Linux-Cheat-sheet/">Open the site</a></dd></div>
           <div class="field"><dt>Code</dt><dd><a href="https://github.com/aleisabek/Linux-Cheat-sheet">GitHub repo</a></dd></div>
         </dl>
@@ -422,12 +422,17 @@
           </div>
           <div class="block">
             <h4>Status</h4>
-            <p>I've finished Bandit level 13 and I'm working on 14. The first topic, moving around the filesystem, is live and works on phone and desktop. Seven more are planned: reading files, finding files, filtering text and pipelines, decoding data (Base64, ROT13, hex), archives, remote connections, and PowerShell equivalents.</p>
+            <p>I've finished Bandit level 13 and I'm working on 14. The site has 190 cards in 12 topics, from finding and filtering files to encoding, archives, networking and git, with the PowerShell equivalent on the back where Windows has one. You can search, filter by topic, follow a spoiler-free Bandit study order, or drill one shuffled card at a time.</p>
+          </div>
+          <div class="block">
+            <h4>How it's built</h4>
+            <p>The cards started as a hand-written page, and I kept a second copy in SkillQuest to study with spaced repetition. Two copies drift apart, so I made SkillQuest the only source: a Node.js export script reads its Linux deck and writes this site as one self-contained HTML file. Adding a card in the app and re-running the export updates the public page.</p>
           </div>
           <div class="block">
             <h4>Known gaps (still open)</h4>
             <ul class="gaps">
-              <li>7 of 8 topics still to write, as I work through the Bandit levels that use them.</li>
+              <li>Bandit levels past 14 will need more cards as I reach them.</li>
+              <li>The public page has no spaced repetition; that part stays in SkillQuest.</li>
             </ul>
           </div>
         </div>
@@ -532,7 +537,7 @@
     '002': 'case-002  trading strategy research lab  [ONGOING]\nrule      write the test rules before seeing results\nsafety    offline, no api keys, live trading blocked, secrets check\nverified  1,046 tests, 66 merged prs, buy-and-hold benchmark\nfound     several strategies failed and were marked DEAD\n<span class="dim">full file: scroll to CASE-002</span>',
     '006': 'case-006  first break-and-fix lab  [OPEN]\nnext up: permissions lab, then log-hunt.',
     '003': 'case-003  bilingual nonprofit website  [ONGOING]\n4 merged prs to production (react/typescript + sanity cms):\naccessible nav, member components, localized committee section,\nguarded english-to-arabic draft workflow.\n<a href="https://acchouston.org/" style="color:inherit">acchouston.org</a>',
-    '004': 'case-004  linux & bandit flashcards  [IN PROGRESS]\nbandit: level 13 done, on 14. first topic live, 7 more planned.\n<a href="https://aleisabek.github.io/Linux-Cheat-sheet/" style="color:inherit">aleisabek.github.io/Linux-Cheat-sheet</a>',
+    '004': 'case-004  linux & bandit flashcards  [IN PROGRESS]\nbandit: level 13 done, on 14. 190 cards in 12 topics, generated from skillquest.\n<a href="https://aleisabek.github.io/Linux-Cheat-sheet/" style="color:inherit">aleisabek.github.io/Linux-Cheat-sheet</a>',
     '005': 'case-005  port garage operations  [CLOSED 2024]\n4-person crew, ~50 vehicles a week to and from the port.\ntransfers to it: triage, dispatch, track, hand off.'
   };
 
