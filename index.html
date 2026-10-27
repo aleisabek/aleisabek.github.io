@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alei Sabek | Case Files</title>
+<meta name="description" content="Alei Sabek: cybersecurity student at UHD. Projects and work written up as case files: the problem, the decisions, how it was verified, and what's still open.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2310161f'/%3E%3Ctext x='5' y='22' font-family='monospace' font-size='16' fill='%23f2b84b'%3E%3E_%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Reem+Kufi:wght@500&display=swap">
+<style>
+  /* One deliberate look for every visitor: near-black console, amber signal */
+  :root {
+    --bg: #0b0b0c;
+    --paper: #141416;
+    --ink: #ececee;
+    --muted: #a1a1a8;
+    --line: #232326;
+    --rule: #303035;
+    --accent: #f2b84b;
+    --accent-ink: #f6c76c;
+    --accent-soft: #2e2410;
+    --ok: #7fd18b;
+    --ok-soft: #14291a;
+    --open: #f2b84b;
+    --open-soft: #2e2410;
+    --wm: #ececee1c;
+    --term-bg: #070708;
+    --term-ink: #dcdce0;
+    --term-dim: #8a8a92;
+    --term-accent: #f2b84b;
+    --term-ok: #7fd18b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 400 17px/1.65 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  a { color: var(--accent-ink); text-underline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace; }
+  .wrap {
+    max-width: 1000px; margin: 0 auto;
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+  }
+
+  /* Top bar */
+  .bar { border-bottom: 1px solid var(--line); }
+  .bar .wrap { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; justify-content: space-between; padding-block: 12px; }
+  .bar .who { font-size: 14px; color: var(--muted); }
+  .bar .who b { color: var(--accent-ink); font-weight: 500; }
+  .bar nav { display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: center; font-size: 15px; }
+  .bar nav a { color: var(--muted); text-decoration: none; }
+  .bar nav a:hover { color: var(--ink); }
+  .term-btn {
+    font: 500 13px "IBM Plex Mono", monospace; color: var(--ink); background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 6px; padding: 4px 10px; cursor: pointer;
+  }
+  .term-btn kbd { font: inherit; color: var(--accent-ink); }
+
+  /* Hero */
+  .hero { position: relative; overflow: hidden; padding-block: 72px 56px; }
+  .watermark {
+    position: absolute; right: 0; top: 18px; pointer-events: none; user-select: none;
+    font-family: "Reem Kufi", "Noto Kufi Arabic", sans-serif; font-weight: 500;
+    font-size: clamp(90px, 17vw, 210px); line-height: 1; color: var(--wm); white-space: nowrap;
+  }
+  .stamp {
+    display: inline-block; font: 600 12px "IBM Plex Mono", monospace; letter-spacing: 0.14em;
+    color: var(--accent-ink); border: 1.5px solid var(--accent); padding: 3px 10px; border-radius: 3px;
+    transform: rotate(-2deg); margin-bottom: 18px;
+  }
+  .hero h1 { position: relative; font-size: clamp(42px, 7vw, 72px); line-height: 1.02; letter-spacing: -0.025em; margin: 0 0 18px; }
+  .hero .lead { position: relative; font-size: clamp(18px, 2.3vw, 21px); color: var(--muted); max-width: 58ch; margin: 0 0 28px; }
+  .hero .lead strong { color: var(--ink); font-weight: 600; }
+
+  .fields {
+    position: relative; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+    border: 1px solid var(--rule); background: var(--paper); border-radius: 6px; margin-bottom: 28px;
+  }
+  .field { padding: 10px 14px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-width: 0; }
+  .field dt { font: 500 11px "IBM Plex Mono", monospace; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .field dd { margin: 2px 0 0; font-weight: 600; font-size: 15px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; }
+  .pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+
+  .actions { position: relative; display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-flex; padding: 11px 18px; border-radius: 6px; font-weight: 600; text-decoration: none;
+    border: 1px solid var(--rule); color: var(--ink); background: var(--paper);
+  }
+  .btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  /* Section headers */
+  section { border-top: 1px solid var(--line); padding-block: 48px; }
+  .label { font: 500 12px "IBM Plex Mono", monospace; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-ink); margin: 0 0 6px; }
+  h2 { font-size: clamp(26px, 3.4vw, 32px); line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.015em; text-wrap: balance; }
+  .sub { color: var(--muted); margin: 0 0 24px; max-width: 62ch; }
+
+  /* Case index */
+  .index { border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); overflow: hidden; }
+  .row {
+    display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 4px 16px; align-items: center;
+    padding: 14px 16px; border-bottom: 1px solid var(--line); text-decoration: none; color: inherit;
+  }
+  .row:last-child { border-bottom: 0; }
+  a.row:hover { background: var(--accent-soft); }
+  .row .id { font: 500 13px "IBM Plex Mono", monospace; color: var(--muted); }
+  .row .t { font-weight: 600; }
+  .row .d { display: block; font-size: 14px; color: var(--muted); font-weight: 400; }
+  .st { font: 600 11px "IBM Plex Mono", monospace; letter-spacing: 0.1em; padding: 3px 8px; border-radius: 3px; white-space: nowrap; }
+  .st.ok { color: var(--ok); background: var(--ok-soft); }
+  .st.open { color: var(--open); background: var(--open-soft); }
+  .st.closed { color: var(--muted); background: var(--bg); border: 1px solid var(--line); }
+  @media (max-width: 560px) {
+    .row { grid-template-columns: minmax(0, 1fr) auto; }
+    .row .id { grid-column: 1 / -1; }
+  }
+
+  /* Case file */
+  .case { background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; }
+  .case-head {
+    display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; align-items: baseline;
+    padding: 16px 20px; border-bottom: 2px solid var(--ink);
+  }
+  .case-head .mono { font-size: 13px; color: var(--muted); }
+  .case-head h3 { margin: 0; font-size: clamp(22px, 3vw, 28px); line-height: 1.2; }
+  .case-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); border-bottom: 1px solid var(--line); }
+  .case-body { display: grid; gap: 28px; padding: 24px 20px 28px; }
+  .block h4 { font: 600 12px "IBM Plex Mono", monospace; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-ink); margin: 0 0 8px; }
+  .block p { margin: 0 0 10px; max-width: 68ch; }
+  .block p:last-child { margin-bottom: 0; }
+  .decisions { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: d; }
+  .decisions li { position: relative; padding-left: 44px; max-width: 72ch; counter-increment: d; }
+  .decisions li::before {
+    content: "0" counter(d); position: absolute; left: 0; top: 2px; font: 600 13px "IBM Plex Mono", monospace;
+    color: var(--accent-ink); border: 1px solid var(--rule); border-radius: 3px; padding: 0 5px;
+  }
+  .decisions strong { display: block; }
+  .decisions span { color: var(--muted); }
+  .evidence { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; }
+  .ev { border: 1px dashed var(--rule); border-radius: 6px; padding: 12px 14px; }
+  .ev b { display: block; font: 600 26px "IBM Plex Mono", monospace; letter-spacing: -0.02em; }
+  .ev span { font-size: 14px; color: var(--muted); }
+  .gaps { margin: 0; padding-left: 20px; color: var(--muted); }
+  .credit { font-size: 15px; color: var(--muted); border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; }
+
+  .toolbox { position: relative; display: grid; gap: 8px; margin-top: 36px; padding-top: 20px; border-top: 1px dashed var(--rule); font-size: 15px; color: var(--muted); }
+  .toolbox .tk { display: inline-block; min-width: 84px; margin-right: 10px; font: 500 12px "IBM Plex Mono", monospace; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-ink); }
+  .case + .case { margin-top: 40px; }
+  .case { scroll-margin-top: 16px; }
+  .draft-note { font: 500 13px "IBM Plex Mono", monospace; color: var(--muted); text-align: center; padding-block: 32px 48px; }
+
+  /* Terminal */
+  .term {
+    position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; height: min(60vh, 440px);
+    background: var(--term-bg); color: var(--term-ink); border-top: 2px solid var(--term-accent);
+    display: flex; flex-direction: column;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    font: 14px/1.55 "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  }
+  .term[hidden] { display: none; }
+  .term-top { display: flex; justify-content: space-between; align-items: center; padding-block: 8px; color: var(--term-dim); font-size: 12px; }
+  .term-top button { background: none; border: 1px solid #2c3a4c; color: var(--term-ink); font: inherit; border-radius: 4px; padding: 2px 8px; cursor: pointer; }
+  .term-out { flex: 1; overflow-y: auto; white-space: pre-wrap; word-break: break-word; }
+  .term-out .p { color: var(--term-ok); }
+  .term-out .a { color: var(--term-accent); }
+  .term-out .dim { color: var(--term-dim); }
+  .term-in { display: flex; gap: 8px; align-items: center; padding-block: 8px 12px; }
+  .term-in label { color: var(--term-ok); white-space: nowrap; }
+  .term-in input { flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: var(--term-ink); font: inherit; caret-color: var(--term-accent); }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <div class="who mono"><b>alei@katy</b>:~/case-files$</div>
+    <nav aria-label="Sections">
+      <a href="#cases">Case index</a>
+      <a href="#case-001">CASE-001</a>
+      <a href="#contact">Contact</a>
+      <button class="term-btn" type="button" id="openTerm" aria-controls="term">open terminal <kbd>~</kbd></button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <div class="watermark" aria-hidden="true" lang="ar" dir="rtl">علي سابك</div>
+    <div class="stamp">PERSONNEL FILE</div>
+    <h1>Alei Sabek</h1>
+    <p class="lead">
+      I've been the go-to IT person for my family and friends since I was a kid.
+      Now I'm making it a career: <strong>cybersecurity student at the University of Houston–Downtown</strong>,
+      studying for Security+, and writing up my work the way a SOC writes up an incident:
+      what the problem was, what I decided, how I checked it, and what's still open.
+    </p>
+    <dl class="fields">
+      <div class="field"><dt>Status</dt><dd class="pill">Open to work</dd></div>
+      <div class="field"><dt>Target</dt><dd>IT support · NOC · SOC</dd></div>
+      <div class="field"><dt>Location</dt><dd>Katy / Houston, TX</dd></div>
+      <div class="field"><dt>In progress</dt><dd>CompTIA Security+ (SY0-701)</dd></div>
+    </dl>
+    <div class="actions">
+      <a class="btn primary" href="https://www.linkedin.com/in/aleisabek">Message me on LinkedIn</a>
+      <a class="btn" href="#cases">Read the case files</a>
+    </div>
+    <div class="toolbox" aria-label="Skills">
+      <div><span class="tk">Systems</span>Linux CLI · Bash · Windows and Linux troubleshooting · networking fundamentals · Docker</div>
+      <div><span class="tk">Security</span>TryHackMe · Hack The Box · OverTheWire Bandit · authentication and CSRF · input validation</div>
+      <div><span class="tk">Code</span>Python · JavaScript / TypeScript · SQL (basics) · Git · automated testing</div>
+    </div>
+  </div>
+
+  <section id="cases">
+    <div class="wrap">
+      <p class="label">Case index</p>
+      <h2>Projects and work, filed like incidents</h2>
+      <p class="sub">Each file says what was asked, what was done, and how I know it works. Open cases are things I'm still working on.</p>
+      <div class="index">
+        <a class="row" href="#case-001">
+          <span class="id">CASE-001</span>
+          <span class="t">SkillQuest: a practice app that can't run out of questions<span class="d">Generators, honest mastery tracking, break-and-fix Linux labs</span></span>
+          <span class="st ok">SHIPPED</span>
+        </a>
+        <a class="row" href="#case-002">
+          <span class="id">CASE-002</span>
+          <span class="t">Trading strategy research lab<span class="d">Pre-registered tests, 1,046 automated tests, offline and key-free by design, honest negative results</span></span>
+          <span class="st open">ONGOING</span>
+        </a>
+        <a class="row" href="#case-003">
+          <span class="id">CASE-003</span>
+          <span class="t">Bilingual nonprofit website<span class="d">Arab American Cultural and Community Center · 4 merged PRs to production, English/Arabic workflow</span></span>
+          <span class="st open">ONGOING</span>
+        </a>
+        <a class="row" href="#case-004">
+          <span class="id">CASE-004</span>
+          <span class="t">Linux &amp; Bandit flashcards<span class="d">A study reference for OverTheWire Bandit, live on GitHub Pages, being built topic by topic</span></span>
+          <span class="st open">IN PROGRESS</span>
+        </a>
+        <a class="row" href="#case-005">
+          <span class="id">CASE-005</span>
+          <span class="t">Port garage operations<span class="d">Garage operations manager · 4-person crew, about 50 vehicles a week to and from the port</span></span>
+          <span class="st closed">CLOSED 2024</span>
+        </a>
+        <div class="row">
+          <span class="id">CASE-006</span>
+          <span class="t">First break-and-fix lab write-up<span class="d">Next up: the permissions lab, then log-hunt. Break it, find the cause, fix it, write it up</span></span>
+          <span class="st open">OPEN</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="case-001">
+    <div class="wrap">
+      <article class="case">
+        <div class="case-head">
+          <h3>CASE-001 · SkillQuest</h3>
+          <span class="mono">Filed Oct 2026 · Status: <span class="st ok">SHIPPED</span></span>
+        </div>
+        <dl class="case-meta">
+          <div class="field"><dt>Type</dt><dd>Personal build</dd></div>
+          <div class="field"><dt>Stack</dt><dd>JavaScript · Node tests · Bash · WSL</dd></div>
+          <div class="field"><dt>Scale</dt><dd>48 lessons · 8 labs</dd></div>
+          <div class="field"><dt>Source</dt><dd>Private · demo on request</dd></div>
+        </dl>
+        <div class="case-body">
+          <div class="block">
+            <h4>The problem</h4>
+            <p>I wanted daily practice tied to the jobs I'm applying for. Fixed question banks have a flaw: after a few passes you memorize the answers, not the skill. And a quiz score says nothing about whether you'd know what to do on a real broken machine.</p>
+          </div>
+
+          <div class="block">
+            <h4>Key decisions</h4>
+            <ol class="decisions">
+              <li><strong>Generate questions instead of storing them.</strong><span>Subnetting, chmod, cron and CVSS problems are created fresh each time, so there's nothing to memorize.</span></li>
+              <li><strong>Don't let mastery be faked.</strong><span>Answers are marked "sure" or "guess", and a lucky guess barely moves the mastery score. A mistake only leaves the journal after I get it right on two different days.</span></li>
+              <li><strong>Practice the job, not just the exam.</strong><span>Help desk tickets, a terminal, a SQL console, and 8 Linux labs that break a system on purpose so I have to diagnose it, next to Security+ and Network+ practice exams mapped to the exam domains.</span></li>
+            </ol>
+          </div>
+
+          <div class="block">
+            <h4>Verification: don't trust, verify</h4>
+            <div class="evidence">
+              <div class="ev"><b>~175,000</b><span>generated problems checked by the test suite for correct answers</span></div>
+              <div class="ev"><b>SQLite</b><span>every SQL challenge answer is run against a real database, not compared as text</span></div>
+              <div class="ev"><b>8 labs</b><span>a test runs every lab end to end: the broken system fails, a wrong fix is caught, the right fix passes</span></div>
+            </div>
+          </div>
+
+          <div class="block">
+            <h4>Known gaps (still open)</h4>
+            <ul class="gaps">
+              <li>Security+ Domain 5 (security program management) isn't covered yet.</li>
+              <li>Advanced levels (3–4) aren't built yet.</li>
+            </ul>
+          </div>
+
+          <div class="block">
+            <h4>How it was built</h4>
+            <p class="credit">I designed SkillQuest, made the product decisions, and use it to study. The code was written with an AI pair programmer (Claude), and every change was tested before it went in.</p>
+          </div>
+        </div>
+      </article>
+      <article class="case" id="case-002">
+        <div class="case-head">
+          <h3>CASE-002 · Trading strategy research lab</h3>
+          <span class="mono">Oct 2026 · Status: <span class="st open">ONGOING</span></span>
+        </div>
+        <dl class="case-meta">
+          <div class="field"><dt>Type</dt><dd>Personal research</dd></div>
+          <div class="field"><dt>Stack</dt><dd>Python · unittest · Docker</dd></div>
+          <div class="field"><dt>Scale</dt><dd>66 merged PRs · 1,046 tests</dd></div>
+          <div class="field"><dt>Source</dt><dd>Private · walkthrough on request</dd></div>
+        </dl>
+        <div class="case-body">
+          <div class="block">
+            <h4>The problem</h4>
+            <p>Testing trading ideas on historical data makes it easy to fool yourself: keep adjusting the rules until the past looks good, and you've measured luck, not an edge. I wanted to know whether any strategy really held up before a single dollar was at risk.</p>
+          </div>
+
+          <div class="block">
+            <h4>Key decisions</h4>
+            <ol class="decisions">
+              <li><strong>Write the rules before seeing results.</strong><span>The evaluation protocol went through 4 reviewed versions before any strategy ran. The most recent months of data stay sealed until candidates are frozen, and every test develops on earlier data, then checks the next unseen period.</span></li>
+              <li><strong>Keep an audit trail.</strong><span>26 owner decisions are logged with dates and reasons. Changing a frozen rule means a new, dated version, never a quiet edit.</span></li>
+              <li><strong>Safe by default.</strong><span>The whole lab runs offline: no API keys, no account connection, and live trading blocked in configuration. A preflight check looks for secrets committed to Git, and outside code is quarantined and read without being run until it's audited.</span></li>
+              <li><strong>Limit the damage.</strong><span>Paper-trading runs have a risk gate: after a 3% weekly loss, new entries are blocked for the rest of the week.</span></li>
+            </ol>
+          </div>
+
+          <div class="block">
+            <h4>Verification</h4>
+            <div class="evidence">
+              <div class="ev"><b>1,046</b><span>automated tests across data, strategy, and risk logic</span></div>
+              <div class="ev"><b>66 PRs</b><span>merged, with written reviews and responses kept alongside the code</span></div>
+              <div class="ev"><b>Benchmark</b><span>strategies are measured against simply buying and holding</span></div>
+            </div>
+          </div>
+
+          <div class="block">
+            <h4>Findings, including the failures</h4>
+            <ul class="gaps">
+              <li>A daily breakout strategy was profitable but far below buy-and-hold, so it was marked DEAD.</li>
+              <li>Two outside strategy ideas were registered, built, and tested. Both failed.</li>
+              <li>An exploratory futures model was liquidated in every scenario tested.</li>
+            </ul>
+            <p style="margin-top:10px">Results were written up in plain language for a non-technical stakeholder, trade by trade where it mattered.</p>
+          </div>
+
+          <div class="block">
+            <h4>Why it matters for security work</h4>
+            <p>Assume you might be wrong, test against something you can't tune, keep secrets out of the code, and log every decision so someone else can audit it. That's the same discipline an incident review needs.</p>
+          </div>
+
+          <div class="block">
+            <h4>How it was built</h4>
+            <p class="credit">I owned the project: set the goals, approved every decision and rule change, and wrote the plain-language reports. The code was written by AI coding agents (Codex and Claude), and changes went through pull requests with written reviews.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="case" id="case-003">
+        <div class="case-head">
+          <h3>CASE-003 · Bilingual nonprofit website</h3>
+          <span class="mono">Aug 2026 – present · Status: <span class="st open">ONGOING</span></span>
+        </div>
+        <dl class="case-meta">
+          <div class="field"><dt>Org</dt><dd>Arab American Cultural and Community Center, Houston</dd></div>
+          <div class="field"><dt>Stack</dt><dd>React · TypeScript · Sanity CMS</dd></div>
+          <div class="field"><dt>Merged PRs</dt><dd>4, to production</dd></div>
+          <div class="field"><dt>Live</dt><dd><a href="https://acchouston.org/">acchouston.org</a></dd></div>
+        </dl>
+        <div class="case-body">
+          <div class="block">
+            <h4>The problem</h4>
+            <p>A community center serving English and Arabic speakers runs a production website that has to work in both languages. Arabic versions of existing content had to be created, and every change had to reach the live site without breaking it for the people who rely on it.</p>
+          </div>
+          <div class="block">
+            <h4>What I shipped: four merged pull requests</h4>
+            <ol class="decisions">
+              <li><strong>Accessible, responsive navigation.</strong><span>Site navigation that works on any screen size and with a keyboard or screen reader.</span></li>
+              <li><strong>Reusable organization-member interfaces.</strong><span>Shared components for showing the organization's members, so the same pieces are reused instead of rebuilt per page.</span></li>
+              <li><strong>A localized committee section.</strong><span>The committee section in both English and Arabic.</span></li>
+              <li><strong>A guarded English-to-Arabic draft workflow in the CMS.</strong><span>Existing English content in Sanity is machine-translated into Arabic drafts, with guards so translations land as drafts for review instead of going straight to the live site.</span></li>
+            </ol>
+          </div>
+          <div class="block">
+            <h4>Verification</h4>
+            <p>The work was backed by extensive automated and browser-based testing, and all four pull requests were merged into the production site.</p>
+          </div>
+          <div class="block">
+            <h4>Why it matters for IT and security work</h4>
+            <p>It's change management on a real production system: nothing reaches users without tests, review, and a safe default. Machine translation writes drafts, never live pages.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="case" id="case-004">
+        <div class="case-head">
+          <h3>CASE-004 · Linux &amp; Bandit flashcards</h3>
+          <span class="mono">Started Sep 2026 · Status: <span class="st open">IN PROGRESS</span></span>
+        </div>
+        <dl class="case-meta">
+          <div class="field"><dt>Bandit</dt><dd>Level 13 done · on 14</dd></div>
+          <div class="field"><dt>Stack</dt><dd>HTML · CSS · GitHub Pages</dd></div>
+          <div class="field"><dt>Live</dt><dd><a href="https://aleisabek.github.io/Linux-Cheat-sheet/">Open the site</a></dd></div>
+          <div class="field"><dt>Code</dt><dd><a href="https://github.com/aleisabek/Linux-Cheat-sheet">GitHub repo</a></dd></div>
+        </dl>
+        <div class="case-body">
+          <div class="block">
+            <h4>The problem</h4>
+            <p>OverTheWire's Bandit wargame teaches Linux by making you use it over SSH, level by level. I wanted a reference written in my own words: each card asks a plain question ("Where am I?", "Go up one folder") and answers it with the command.</p>
+          </div>
+          <div class="block">
+            <h4>Status</h4>
+            <p>I've finished Bandit level 13 and I'm working on 14. The first topic, moving around the filesystem, is live and works on phone and desktop. Seven more are planned: reading files, finding files, filtering text and pipelines, decoding data (Base64, ROT13, hex), archives, remote connections, and PowerShell equivalents.</p>
+          </div>
+          <div class="block">
+            <h4>Known gaps (still open)</h4>
+            <ul class="gaps">
+              <li>7 of 8 topics still to write, as I work through the Bandit levels that use them.</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <article class="case" id="case-005">
+        <div class="case-head">
+          <h3>CASE-005 · Port garage operations</h3>
+          <span class="mono">2023 – 2024 · Status: <span class="st closed">CLOSED</span></span>
+        </div>
+        <dl class="case-meta">
+          <div class="field"><dt>Role</dt><dd>Garage operations manager</dd></div>
+          <div class="field"><dt>Company</dt><dd>Sabek Carriers, Houston</dd></div>
+          <div class="field"><dt>Team</dt><dd>4-person crew</dd></div>
+          <div class="field"><dt>Volume</dt><dd>About 50 vehicles a week</dd></div>
+        </dl>
+        <div class="case-body">
+          <div class="block">
+            <h4>The problem</h4>
+            <p>About 50 vehicles a week moving to and from the port, a 4-person crew, and a schedule that only works if nothing sits waiting.</p>
+          </div>
+          <div class="block">
+            <h4>What I did</h4>
+            <ol class="decisions">
+              <li><strong>Assigned the day's work.</strong><span>Decided who handled what each day and kept the crew on schedule.</span></li>
+              <li><strong>Tracked every arrival and departure.</strong><span>Kept a running record of vehicles coming in from and going out to the port.</span></li>
+              <li><strong>Solved problems as they came up.</strong><span>Worked through day-to-day scheduling and workflow problems to keep vehicles moving without delays.</span></li>
+            </ol>
+          </div>
+          <div class="block">
+            <h4>What transfers to IT</h4>
+            <p>A help desk or NOC queue works the same way: triage what comes in, dispatch it to the right person, track it until it's closed, and write handoffs the next shift can trust.</p>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+
+<section id="contact">
+  <div class="wrap">
+    <p class="label">Contact</p>
+    <h2>Open a ticket with me</h2>
+    <p class="sub">The fastest way to reach me is a LinkedIn message. English and Arabic.</p>
+    <div class="actions">
+      <a class="btn primary" href="https://www.linkedin.com/in/aleisabek">LinkedIn</a>
+      <a class="btn" href="https://github.com/aleisabek">GitHub</a>
+    </div>
+  </div>
+</section>
+
+<div class="term" id="term" role="dialog" aria-label="Terminal" hidden>
+  <div class="term-top"><span>alei@katy · type help</span><button type="button" id="closeTerm">close (esc)</button></div>
+  <div class="term-out" id="termOut" aria-live="polite"></div>
+  <form class="term-in" id="termForm" autocomplete="off">
+    <label for="termIn">alei@katy:~$</label>
+    <input id="termIn" spellcheck="false" autocapitalize="off" aria-label="Terminal command">
+  </form>
+</div>
+
+<script>
+(function () {
+  var term = document.getElementById('term'), out = document.getElementById('termOut'),
+      input = document.getElementById('termIn'), opened = false;
+
+  function esc(s) { return s.replace(/[&<>]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
+  function print(html) { out.insertAdjacentHTML('beforeend', html + '\n'); out.scrollTop = out.scrollHeight; }
+
+  var cmds = {
+    help: function () {
+      return 'commands:\n' +
+        '  <span class="a">whoami</span>        who this is\n' +
+        '  <span class="a">ls</span>            list case files\n' +
+        '  <span class="a">cat case-001</span>  open a case (001 to 006)\n' +
+        '  <span class="a">skills</span>        toolbox\n' +
+        '  <span class="a">contact</span>       how to reach me\n' +
+        '  <span class="a">clear</span>, <span class="a">exit</span>';
+    },
+    whoami: function () { return 'alei sabek: cybersecurity student (UHD), studying for Security+, looking for IT support / NOC / SOC work in Houston.'; },
+    ls: function () {
+      return '<span class="a">case-001</span>  skillquest            SHIPPED\n' +
+             '<span class="a">case-002</span>  trading-research-lab  ONGOING\n' +
+             '<span class="a">case-003</span>  nonprofit-website     ONGOING\n' +
+             '<span class="a">case-004</span>  linux-bandit-cards    IN PROGRESS\n' +
+             '<span class="a">case-005</span>  port-garage-ops       CLOSED\n' +
+             '<span class="a">case-006</span>  break-fix-lab         OPEN';
+    },
+    skills: function () {
+      return 'systems   linux cli, bash, windows + linux troubleshooting, networking basics, docker\n' +
+             'security  tryhackme, hack the box, overthewire bandit, auth + csrf, input validation\n' +
+             'code      python, javascript/typescript, sql (basics), git, automated testing';
+    },
+    contact: function () { return 'linkedin: <a href="https://www.linkedin.com/in/aleisabek" style="color:inherit">linkedin.com/in/aleisabek</a>\ngithub:   <a href="https://github.com/aleisabek" style="color:inherit">github.com/aleisabek</a>'; },
+    sudo: function (args) {
+      return args.join(' ') === 'hire-me'
+        ? '[sudo] permission granted. next step: <a href="https://www.linkedin.com/in/aleisabek" style="color:inherit">message me on LinkedIn</a>.'
+        : 'alei is not in the sudoers file. this incident will be reported. (try: sudo hire-me)';
+    }
+  };
+  var cases = {
+    '001': 'case-001  skillquest  [SHIPPED]\nproblem   fixed question banks get memorized\nfix       generated questions, honest mastery, break-and-fix labs\nverified  ~175,000 generated problems checked; sql run on real sqlite\nopen      security+ domain 5, levels 3-4\n<span class="dim">full file: scroll to CASE-001</span>',
+    '002': 'case-002  trading strategy research lab  [ONGOING]\nrule      write the test rules before seeing results\nsafety    offline, no api keys, live trading blocked, secrets check\nverified  1,046 tests, 66 merged prs, buy-and-hold benchmark\nfound     several strategies failed and were marked DEAD\n<span class="dim">full file: scroll to CASE-002</span>',
+    '006': 'case-006  first break-and-fix lab  [OPEN]\nnext up: permissions lab, then log-hunt.',
+    '003': 'case-003  bilingual nonprofit website  [ONGOING]\n4 merged prs to production (react/typescript + sanity cms):\naccessible nav, member components, localized committee section,\nguarded english-to-arabic draft workflow.\n<a href="https://acchouston.org/" style="color:inherit">acchouston.org</a>',
+    '004': 'case-004  linux & bandit flashcards  [IN PROGRESS]\nbandit: level 13 done, on 14. first topic live, 7 more planned.\n<a href="https://aleisabek.github.io/Linux-Cheat-sheet/" style="color:inherit">aleisabek.github.io/Linux-Cheat-sheet</a>',
+    '005': 'case-005  port garage operations  [CLOSED 2024]\n4-person crew, ~50 vehicles a week to and from the port.\ntransfers to it: triage, dispatch, track, hand off.'
+  };
+
+  function run(line) {
+    var parts = line.trim().split(/\s+/), name = (parts[0] || '').toLowerCase(), args = parts.slice(1);
+    print('<span class="p">alei@katy:~$</span> ' + esc(line));
+    if (!name) return;
+    if (name === 'clear') { out.innerHTML = ''; return; }
+    if (name === 'exit') { close(); return; }
+    if (name === 'cat' || name === 'open') {
+      var m = (args[0] || '').match(/(\d{1,3})$/), key = m ? ('00' + m[1]).slice(-3) : '';
+      print(cases[key] || 'cat: ' + esc(args[0] || '') + ': no such case. try ls');
+      return;
+    }
+    print(cmds[name] ? cmds[name](args) : esc(name) + ': command not found. try help');
+  }
+
+  function open() {
+    term.hidden = false;
+    if (!opened) { opened = true; print('<span class="dim">case-files terminal · type</span> <span class="a">help</span>'); }
+    input.focus();
+  }
+  function close() { term.hidden = true; document.getElementById('openTerm').focus(); }
+
+  document.getElementById('openTerm').addEventListener('click', open);
+  document.getElementById('closeTerm').addEventListener('click', close);
+  document.getElementById('termForm').addEventListener('submit', function (e) { e.preventDefault(); run(input.value); input.value = ''; });
+  document.addEventListener('keydown', function (e) {
+    var typing = /INPUT|TEXTAREA/.test(document.activeElement.tagName);
+    if ((e.key === '`' || e.key === '~') && !typing) { e.preventDefault(); term.hidden ? open() : close(); }
+    else if (e.key === 'Escape' && !term.hidden) close();
+  });
+})();
+</script>
+</body>
+</html>
